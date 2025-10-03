@@ -3,10 +3,22 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest",
+    "e2e": "cypress run",
+    "cypress:open": "cypress open"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.4",
+    "@testing-library/react": "^14.1.2",
+    "jsdom": "^23.0.1",
+    "vitest": "^1.5.0",
+    "cypress": "^13.13.0"
+  },
+  "vitest": {
+    "environment": "jsdom"
+  }
 }
