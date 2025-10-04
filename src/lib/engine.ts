@@ -46,11 +46,23 @@ export function tokenize(s: string): Tok[] {
   }
   const out: Tok[] = [];
   for (let k = 0; k < tokens.length; k++) {
-    const t = tokens[k]; const next = tokens[k + 1]; out.push(t);
-    const isValue = (x?: Tok) => x && (x.type === "num" || x.type === "rparen" || x.type === "bang" || x.type === "percent" || x.type === "id");
-    if (isValue(t) && next && (next.type === "lparen" || next.type === "id")) out.push({ type: "mul" });
-    else if ((t.type === "rparen" || t.type === "bang" || t.type === "percent") && next && (next.type === "num" || next.type === "id" || next.type === "lparen")) out.push({ type: "mul" });
-    else if (t.type === "id" && next && next.type === "num") out.push({ type: "mul" });
+    const t = tokens[k];
+    const next = tokens[k + 1];
+    out.push(t);
+    if (!next) continue;
+    const isValue = (x?: Tok) =>
+      x && (x.type === "num" || x.type === "rparen" || x.type === "bang" || x.type === "percent" || x.type === "id");
+    const isFunctionCall = t.type === "id" && next.type === "lparen";
+    if (!isFunctionCall && isValue(t) && (next.type === "lparen" || next.type === "id")) {
+      out.push({ type: "mul" });
+    } else if (
+      (t.type === "rparen" || t.type === "bang" || t.type === "percent") &&
+      (next.type === "num" || next.type === "id" || next.type === "lparen")
+    ) {
+      out.push({ type: "mul" });
+    } else if (t.type === "id" && next.type === "num") {
+      out.push({ type: "mul" });
+    }
   }
   return out;
 }
@@ -89,7 +101,12 @@ export function toRPN(tokens: Tok[]): Tok[] {
     } else if (t.type === "comma") {
       while (stack.length && (stack[stack.length - 1] as Tok).type !== "lparen") out.push(stack.pop() as Tok);
       if (!stack.length) throw new Error("Comma not inside function");
-    } else if (t.type === "percent" || t.type === "bang") out.push(t);
+    } else if (t.type === "percent" || t.type === "bang") {
+      if (stack.length && (stack[stack.length - 1] as Tok).type === "u-") {
+        out.push(stack.pop() as Tok);
+      }
+      out.push(t);
+    }
     else throw new Error("Bad token: " + (t as any).type);
   }
   while (stack.length) {

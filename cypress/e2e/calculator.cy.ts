@@ -1,37 +1,90 @@
 
+const STORAGE_KEY = "scientific-calculator-state-v2";
+
+const visitFresh = () =>
+  cy.visit("/", {
+    onBeforeLoad(win) {
+      win.localStorage.removeItem(STORAGE_KEY);
+    },
+  });
+
+const getDisplay = () => cy.get("output");
+
+const pressKey = (label: string) => {
+  cy.contains("button", label).click();
+};
+
 describe("Calculator E2E", () => {
-  beforeEach(() => {
-    cy.visit("/");
-  });
-
-  it("evaluates sin(30) in DEG to 0.5", () => {
+  it("evaluates sin(30) in degree mode", () => {
+    visitFresh();
     cy.contains("Scientific Calculator");
-    cy.get("input[placeholder*='Type']").clear().type("sin(30)");
-    cy.contains("=").click();
-    cy.get("input").should(($inp) => {
-      expect($inp.val()).to.contain("0.5");
-    });
+
+    pressKey("sin");
+    pressKey("3");
+    pressKey("0");
+    pressKey(")");
+    pressKey("=");
+
+    getDisplay().should("have.text", "0.5");
+    cy.contains("span", "sin(30) =");
   });
 
-  it("RAD mode sin(pi/2) = 1", () => {
-    cy.get("select").select("RAD");
-    cy.get("input").clear().type("sin(pi/2)");
-    cy.contains("=").click();
-    cy.get("input").should(($inp) => expect($inp.val()).to.contain("1"));
+  it("computes factorial results", () => {
+    visitFresh();
+
+    pressKey("5");
+    pressKey("x!");
+    pressKey("=");
+
+    getDisplay().should("have.text", "120");
   });
 
-  it("memory ops", () => {
-    cy.get("input").clear().type("2^8");
-    cy.contains("=").click();
-    cy.contains("M+").click();
-    cy.get("input").clear();
-    cy.contains("MR").click();
-    cy.get("input").should(($inp) => expect(($inp.val() as string)).to.match(/256$/));
+  it("supports undo and redo of evaluated expressions", () => {
+    visitFresh();
+
+    pressKey("1");
+    pressKey("+");
+    pressKey("2");
+
+    getDisplay().should("have.text", "1+2");
+    cy.contains("button", "↺").should("be.disabled");
+    cy.contains("button", "↻").should("be.disabled");
+
+    pressKey("=");
+
+    getDisplay().should("have.text", "3");
+    cy.contains("button", "↺").should("not.be.disabled");
+    cy.contains("button", "↻").should("be.disabled");
+
+    pressKey("↺");
+
+    getDisplay().should("have.text", "1+2");
+    cy.contains("button", "↺").should("be.disabled");
+    cy.contains("button", "↻").should("not.be.disabled");
+
+    pressKey("↻");
+
+    getDisplay().should("have.text", "3");
   });
 
-  it("factorial", () => {
-    cy.get("input").clear().type("5!");
-    cy.contains("=").click();
-    cy.get("input").should(($inp) => expect($inp.val()).to.contain("120"));
+  it("persists calculator state and history between reloads", () => {
+    visitFresh();
+
+    pressKey("2");
+    pressKey("+");
+    pressKey("2");
+    pressKey("=");
+
+    getDisplay().should("have.text", "4");
+    cy.contains("span", "2+2 =");
+
+    cy.reload();
+
+    getDisplay().should("have.text", "4");
+    cy.contains("span", "2+2 =");
+    cy.contains("button", "↺").should("not.be.disabled").click();
+
+    getDisplay().should("have.text", "2+2");
+    cy.contains("button", "↻").should("not.be.disabled");
   });
 });
