@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Build output
+dist/
+dist-ssr/
+build/
+.vite/
+
+# TypeScript incremental and emitted artifacts
+*.tsbuildinfo
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+src/**/*.d.ts.map
+!src/vite-env.d.ts
+vite.config.js
+vite.config.js.map
+vite.config.d.ts
+vite.config.d.ts.map
+
+# Test output
+coverage/
+cypress/downloads/
+cypress/screenshots/
+cypress/videos/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.local
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -25,6 +25,6 @@ describe("engine", () => {
   it("errors", () => {
     expect(() => evaluate(")")).toThrow();
     expect(() => evaluate("(-)")).toThrow();
-    expect(() => evaluate("-1!")).toThrow();
+    expect(() => evaluate("(-1)!")).toThrow();
   });
 });
